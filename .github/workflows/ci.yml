@@ -63,5 +63,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Construir backend
+        env:
+          GRAFANA_ADMIN_PASSWORD: "ci-placeholder-not-used"
         run: |
+          docker compose config --quiet
           docker compose build backend
