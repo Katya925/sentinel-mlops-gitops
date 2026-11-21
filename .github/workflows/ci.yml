@@ -48,6 +48,14 @@ jobs:
         run: |
           python -m mlops.validate_model
 
+      - name: Publicar manifiesto como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: sentinel-model-manifest
+          path: mlops/artifacts/model_manifest.json
+          if-no-files-found: error
+          retention-days: 30    
+
 
       - name: Ejecutar Pytest    
         run: |
