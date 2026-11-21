@@ -42,13 +42,25 @@ jobs:
       - name: Validar datos de entrada
         run: |
           python -m mlops.validate_data
-
       
       - name: Validar modelo Random Forest
         run: |
           python -m mlops.validate_model
 
-      - name: Publicar manifiesto como artefacto
+      - name: Generar manifiesto de version del modelo
+        run: |
+          python -m mlops.version_model
+          
+      # Comprobar que el archivo se genero
+      - name: Verificar manifiesto generado
+        run: |
+          echo "Directorio actual:"    
+          pwd
+          echo "Contenido de mlops/artifacts:"
+          ls -la mlops/artifacts/
+          test -f mlops/artifacts/model_manifest.json
+
+      - name: Publicar manifiesto como artefacto de CI
         uses: actions/upload-artifact@v4
         with:
           name: sentinel-model-manifest
