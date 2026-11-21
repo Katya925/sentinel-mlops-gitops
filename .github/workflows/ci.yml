@@ -89,6 +89,17 @@ jobs:
           docker compose config --quiet
           docker compose build backend
 
+          SHORT_SHA="${GITHUB_SHA::7}"
+
+          docker tag sentinel-backend:v1 \
+            "sentinel-backend:${SHORT_SHA}"
+
+          echo "Imagen generada: sentinel-backend:${SHORT_SHA}"  
+
+          docker image inspect \
+            "sentinel-backend:${SHORT_SHA}" \
+            --format '{{.Id}}'
+
   deploy-lab:
     name: Despliegue y Smoke Tests
     runs-on: ubuntu-latest
