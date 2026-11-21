@@ -88,3 +88,54 @@ jobs:
         run: |
           docker compose config --quiet
           docker compose build backend
+
+  deploy-lab:
+    name: Despliegue y Smoke Tests
+    runs-on: ubuntu-latest
+    needs: docker-build
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Obtener codigo
+        uses: actions/checkout@v4
+
+      - name: Validar configuracion de despliegue
+        run: |
+          docker compose -f compose.ci.yaml config --quiet
+
+      - name: Desplegar backend de laboratorio
+        run: |
+          docker compose -f compose.ci.yaml up -d --build --wait --wait-timeout 120
+
+      - name: Verificar estado del contenedor
+        run: |
+          docker compose -f compose.ci.yaml ps
+
+      - name: Ejecutar Smoke Tests
+        env:
+          SENTINEL_API_URL: http://127.0.0.1:8000
+        run: |
+          python mlops/smoke_test.py
+
+      - name: Guardar diagnostico del despliegue
+        if: always()
+        run: |
+          mkdir -p deployment-evidence
+          docker compose -f compose.ci.yaml ps -a > deployment-evidence/containers.txt 2>&1 || true
+          docker compose -f compose.ci.yaml logs --no-color backend > deployment-evidence/backend.log 2>&1 || true
+
+      - name: Publicar evidencias de despliegue
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sentinel-deployment-evidence
+          path: deployment-evidence/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Limpiar entorno de laboratorio
+        if: always()
+        run: |
+          docker compose -f compose.ci.yaml down
