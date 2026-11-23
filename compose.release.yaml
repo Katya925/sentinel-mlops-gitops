@@ -1,0 +1,30 @@
+
+# ============================================================
+# SENTINEL MLOPS & GITOPS
+# DESPLIEGUE DE IMAGEN VERSIONADA DESDE GHCR
+# ============================================================
+
+services:
+  backend:
+    image: ${SENTINEL_IMAGE:?Define SENTINEL_IMAGE}
+
+    pull_policy: always
+
+    ports:
+      - "127.0.0.1:8000:8000"
+
+    environment:
+      OTEL_SDK_DISABLED: "true"
+      OTEL_TRACES_EXPORTER: "none"
+      SENTINEL_SIMULATE_LATENCY_SECONDS: "0"
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s

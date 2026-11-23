@@ -127,30 +127,52 @@ jobs:
 
           echo "Imagen publicada: ${IMAGE_NAME}:${GITHUB_SHA}"
 
-
   deploy-lab:
     name: Despliegue y Smoke Tests
     runs-on: ubuntu-latest
     needs: docker-build
 
+    # Solo desplegar imagenes publicadas desde main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
     permissions:
       contents: read
+      packages: read
+
+    env:
+      SENTINEL_IMAGE: ghcr.io/${{ github.repository_owner }}/sentinel-backend:${{ github.sha }}
 
     steps:
       - name: Obtener codigo
         uses: actions/checkout@v4
 
+      - name: Autenticar en GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Normalizar nombre de imagen
+        run: |
+          echo "SENTINEL_IMAGE=$(echo "$SENTINEL_IMAGE" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+
       - name: Validar configuracion de despliegue
         run: |
-          docker compose -f compose.ci.yaml config --quiet
+          docker compose -f compose.release.yaml config --quiet
 
-      - name: Desplegar backend de laboratorio
+      - name: Descargar imagen versionada
         run: |
-          docker compose -f compose.ci.yaml up -d --build --wait --wait-timeout 120
+          docker compose -f compose.release.yaml pull backend
 
-      - name: Verificar estado del contenedor
+      - name: Desplegar version desde GHCR
         run: |
-          docker compose -f compose.ci.yaml ps
+          docker compose -f compose.release.yaml up -d --no-build --wait --wait-timeout 120
+
+      - name: Verificar imagen desplegada
+        run: |
+          docker compose -f compose.release.yaml ps
+          docker image inspect "$SENTINEL_IMAGE" --format '{{.Id}}'
 
       - name: Ejecutar Smoke Tests
         env:
@@ -162,14 +184,16 @@ jobs:
         if: always()
         run: |
           mkdir -p deployment-evidence
-          docker compose -f compose.ci.yaml ps -a > deployment-evidence/containers.txt 2>&1 || true
-          docker compose -f compose.ci.yaml logs --no-color backend > deployment-evidence/backend.log 2>&1 || true
+          echo "Commit: $GITHUB_SHA" > deployment-evidence/release.txt
+          echo "Imagen: $SENTINEL_IMAGE" >> deployment-evidence/release.txt
+          docker compose -f compose.release.yaml ps -a > deployment-evidence/containers.txt 2>&1 || true
+          docker compose -f compose.release.yaml logs --no-color backend > deployment-evidence/backend.log 2>&1 || true
 
       - name: Publicar evidencias de despliegue
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sentinel-deployment-evidence
+          name: sentinel-release-evidence
           path: deployment-evidence/
           if-no-files-found: warn
           retention-days: 30
@@ -177,4 +201,4 @@ jobs:
       - name: Limpiar entorno de laboratorio
         if: always()
         run: |
-          docker compose -f compose.ci.yaml down
+          docker compose -f compose.release.yaml down
