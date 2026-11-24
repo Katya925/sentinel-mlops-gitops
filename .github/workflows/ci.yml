@@ -1,4 +1,3 @@
-
 name: Sentinel MLOps - Continuous Integration
 
 on:
@@ -42,7 +41,7 @@ jobs:
       - name: Validar datos de entrada
         run: |
           python -m mlops.validate_data
-      
+
       - name: Validar modelo Random Forest
         run: |
           python -m mlops.validate_model
@@ -50,11 +49,11 @@ jobs:
       - name: Generar manifiesto de version del modelo
         run: |
           python -m mlops.version_model
-          
+
       # Comprobar que el archivo se genero
       - name: Verificar manifiesto generado
         run: |
-          echo "Directorio actual:"    
+          echo "Directorio actual:"
           pwd
           echo "Contenido de mlops/artifacts:"
           ls -la mlops/artifacts/
@@ -66,10 +65,10 @@ jobs:
           name: sentinel-model-manifest
           path: mlops/artifacts/model_manifest.json
           if-no-files-found: error
-          retention-days: 30    
+          retention-days: 30
 
 
-      - name: Ejecutar Pytest    
+      - name: Ejecutar Pytest
         run: |
           python -m pytest -q tests
 
@@ -86,6 +85,9 @@ jobs:
       - name: Obtener codigo
         uses: actions/checkout@v4
 
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Autenticar en GitHub Container Registry
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
@@ -94,38 +96,33 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Construir backend
+      - name: Preparar nombre de imagen
+        id: image
         env:
-          GRAFANA_ADMIN_PASSWORD: "ci-placeholder-not-used"
+          OWNER: ${{ github.repository_owner }}
         run: |
-          docker compose config --quiet
-          docker compose build backend
+          OWNER=$(echo "$OWNER" | tr '[:upper:]' '[:lower:]')
+          echo "name=ghcr.io/${OWNER}/sentinel-backend" >> "$GITHUB_OUTPUT"
 
-          SHORT_SHA="${GITHUB_SHA::7}"
-
-          docker tag sentinel-backend:v1 \
-            "sentinel-backend:${SHORT_SHA}"
-
-          echo "Imagen generada: sentinel-backend:${SHORT_SHA}"  
-
-          docker image inspect \
-            "sentinel-backend:${SHORT_SHA}" \
-            --format '{{.Id}}'
-
-      - name: Publicar imagen versionada en GHCR
+      - name: Construir imagen con cache y publicar en GHCR
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/sentinel-backend
-        run: |
-          SHORT_SHA="${GITHUB_SHA::7}"
-          IMAGE_NAME=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.image.outputs.name }}:${{ github.sha }}
+          cache-from: type=gha,scope=sentinel-backend
+          cache-to: type=gha,mode=max,scope=sentinel-backend
 
-          docker tag "sentinel-backend:${SHORT_SHA}" \
-            "${IMAGE_NAME}:${GITHUB_SHA}"
-
-          docker push "${IMAGE_NAME}:${GITHUB_SHA}"
-
-          echo "Imagen publicada: ${IMAGE_NAME}:${GITHUB_SHA}"
+      - name: Construir imagen sin publicar
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          cache-from: type=gha,scope=sentinel-backend
 
   deploy-lab:
     name: Despliegue y Smoke Tests
