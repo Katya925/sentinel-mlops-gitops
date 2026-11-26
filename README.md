@@ -4,7 +4,7 @@
 
 [![CI/CD](https://github.com/Katya925/sentinel-mlops-gitops/actions/workflows/ci.yml/badge.svg)](https://github.com/Katya925/sentinel-mlops-gitops/actions/workflows/ci.yml)
 
-> Prototipo académico. Apoyo a la revisión humana; no autorizado para producción real ni para rechazar reclamaciones automáticamente.
+> Propuesta que requiere supervisión humana, no rechaza reclamaciones automáticamente.
 
 ## 1. Resumen ejecutivo y valor de negocio
 
@@ -559,6 +559,5 @@ Sentinel integra el modelo predictivo con controles de operación, automatizaci�
 
 ## 22. Referencias
 
-- Material académico T19, T20, T23 y T24.
 - [GitHub Actions](https://docs.github.com/actions), [Docker](https://docs.docker.com/), [Prometheus](https://prometheus.io/docs/), [Grafana](https://grafana.com/docs/), [OpenTelemetry](https://opentelemetry.io/docs/), [Evidently](https://docs.evidentlyai.com/), [MLflow](https://mlflow.org/docs/latest/).
 
