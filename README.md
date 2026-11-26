@@ -1,47 +1,64 @@
-# Sentinel Observability
-## Monitorización proactiva, mantenimiento y gobernanza operativa de un modelo de detección de fraude en seguros
+# Sentinel MLOps & GitOps
 
-**Modelo:** Random Forest  
-**Entorno:** Docker Compose local  
+**Detección de fraude en seguros de automóviles | Ciclo de vida de IA, CI/CD, observabilidad y gobernanza**
 
----
+[![CI/CD](https://github.com/Katya925/sentinel-mlops-gitops/actions/workflows/ci.yml/badge.svg)](https://github.com/Katya925/sentinel-mlops-gitops/actions/workflows/ci.yml)
 
-## 1. Descripción del proyecto
+> Prototipo académico. Apoyo a la revisión humana; no autorizado para producción real ni para rechazar reclamaciones automáticamente.
 
-Sentinel Observability amplía el proyecto Sentinel Fraud Detection desarrollado en Fase II, mediante una arquitectura de observabilidad moderna para supervisar un servicio de Machine Learning.
+## 1. Resumen ejecutivo y valor de negocio
 
-La solución integra:
+Sentinel prioriza reclamaciones potencialmente fraudulentas mediante Random Forest y una API FastAPI. Busca orientar la capacidad de investigación hacia casos sospechosos, sin sustituir el juicio del analista. La automatización reduce tareas repetitivas de integración y despliegue; la observabilidad facilita el diagnóstico y la recuperación. No se han medido ahorros monetarios ni impacto comercial real.
 
-- Métricas operativas con Prometheus.
-- Dashboards de monitorización con Grafana.
-- Logs estructurados en formato JSON.
-- Trazas distribuidas mediante OpenTelemetry y Tempo.
-- Detección de Data Drift con Evidently.
-- Seguimiento de evaluaciones mediante MLflow.
-- Alertas operativas alineadas con SLO.
-- Simulación de incidentes y ejecución de runbooks.
+| Resultado de laboratorio | Valor |
+|---|---:|
+| Pruebas API | 12/12 |
+| Smoke tests | 3/3 |
+| Variables de entrada | 32 |
+| Construcción Docker, reducción promedio observada | 64.66% |
+| Duración acumulada de trabajos, reducción promedio observada | 38.26% |
+| Promoción, rollback manual y reconciliación bajo demanda | Validados |
 
-El objetivo es detectar anomalías, facilitar el diagnóstico y demostrar procedimientos de recuperación del servicio.
+## 2. Evolución del proyecto
 
-El sistema se ejecuta localmente y no está aprobado para producción.
+| Etapa | Alcance |
+|---|---|
+| [Sentinel Fraud Detection](https://github.com/Katya925/sentinel-fraud-detection) | Modelo predictivo, FastAPI y Streamlit |
+| [Sentinel Observability](https://github.com/Katya925/sentinel-observability) | Métricas, trazas, drift, alertas e incidentes |
+| [Sentinel MLOps & GitOps](https://github.com/Katya925/sentinel-mlops-gitops) | CI/CD, versionado, reconciliación, auditoría y optimización |
 
----
+## 3. Modelo y límites predictivos
 
-## 2. Relación con Sentinel Fraud Detection
+El modelo Random Forest se conserva sin reentrenamiento en esta etapa. Los metadatos históricos suministrados (`backend/sentinel_metadata.json`) identifican `RF_Optimizado`, objetivo `FraudFound_P`, umbral 0.19 y revisión humana obligatoria.
 
-Sentinel Observability continúa el proyecto original de detección de fraude en seguros.
+| Métrica | Validación histórica | Prueba exploratoria histórica |
+|---|---:|---:|
+| Precision | 29.59% | 28.34% |
+| Recall | 31.35% | 28.80% |
+| F1 | 30.45% | 28.57% |
+| FPR | 4.76% | 4.62% |
+| Accuracy | — | 91.41% |
+| ROC-AUC | — | 0.8438 |
+| PR-AUC | — | 0.2805 |
 
-Repositorio original:
+En la prueba exploratoria se registraron 53 verdaderos positivos, 134 falsos positivos, 131 falsos negativos y 2766 verdaderos negativos. El recall limitado y los falsos positivos justifican la supervisión humana. La accuracy aislada no demuestra utilidad suficiente en un problema desbalanceado. Estas métricas no se recalcularon en la fase MLOps; los smoke tests no miden calidad predictiva.
 
-https://github.com/Katya925/sentinel-fraud-detection
+## 4. Arquitectura
 
-La solución conserva el modelo Random Forest, el backend FastAPI y el frontend Streamlit.
+```mermaid
+flowchart LR
+  G[Git / GitHub] --> T[CI: datos, modelo, Pytest]
+  T --> B[Buildx y GHCR]
+  B --> D[Compose: despliegue de laboratorio]
+  D --> S[Smoke tests y artefactos]
+  G --> M[Manifiestos JSON]
+  M --> R[Reconciliador bajo demanda]
+  B --> R
+  R --> L[Backend local]
+  R --> A[Auditoría JSONL]
+```
 
-La nueva fase incorpora capacidades de monitorización, detección de anomalías y gobernanza operativa.
-
----
-
-## 3. Arquitectura
+La arquitectura operativa heredada es independiente del runner efímero de CI:
 
 ```text
                   USUARIO
@@ -86,7 +103,7 @@ La arquitectura implementada se documenta en:
 
 ---
 
-## 4. Tecnologías
+## 5. Stack tecnológico
 
 | Tecnología | Función |
 |---|---|
@@ -106,56 +123,71 @@ Los logs estructurados se consultan mediante Docker Compose.
 
 La centralización en Loki queda como mejora futura.
 
+| Tecnología adicional | Justificación |
+|---|---|
+| GitHub Actions | Automatizar verificaciones y despliegue |
+| Pytest / HTTPX | Pruebas de API aisladas |
+| GHCR | Conservar imágenes versionadas |
+| Docker Buildx | Reutilizar capas de construcción |
+| SHA-256 | Identificar artefactos y metadatos |
+| JSON / JSONL | Declarar versiones y registrar reconciliaciones |
+
+
 ---
 
-## 5. Estructura del repositorio
+## 6. Estructura principal del repositorio
 
 ```text
-Sentinel-Observability/
-├── backend/
-│   ├── main.py
-│   ├── logging_config.py
-│   ├── tracing_config.py
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── ...
-├── frontend/
-│   ├── app.py
-│   ├── Dockerfile
-│   └── requirements.txt
-├── monitoring/
-│   ├── prometheus/
-│   │   ├── prometheus.yml
-│   │   └── rules/
-│   │       └── sentinel_alerts.yml
-│   └── tempo/
-│       └── tempo.yaml
-├── drift/
-│   ├── data/
-│   │   ├── reference/
-│   │   └── current/
-│   ├── reports/
-│   └── scripts/
-├── simulations/
-│   └── generar_latencia.py
-├── runbooks/
-│   ├── INC-001_backend_unavailable.md
-│   └── INC-002_high_latency.md
-├── docs/
-│   ├── indicadores_slo.md
-│   ├── arquitectura_observabilidad.md
-│   ├── alertas_y_automatizacion.md
-│   ├── resultados_incidentes.md
-│   └── evidencias/
-├── tests/
-├── compose.yaml
-├── .gitignore
-└── README.md
+.github/workflows/ci.yml
+backend/                    # API, modelo, metadatos, Dockerfile
+frontend/                   # Streamlit
+monitoring/                 # Prometheus y Tempo
+drift/                      # Datos derivados, scripts y reportes
+simulations/                # Generación de latencia
+runbooks/                   # INC-001 e INC-002
+tests/                      # Pytest y reclamación de ejemplo
+mlops/
+  validate_data.py
+  validate_model.py
+  version_model.py
+  smoke_test.py
+  reconcile_release.py
+  artifacts/
+releases/
+  staging.json
+  production.json
+docs/                       # Documentación y evidencias
+compose.yaml
+compose.ci.yaml
+compose.release.yaml
+requirements-dev.txt
+README.md
 ```
 
----
+## 7. Pipeline automatizado
 
-## 6. Instalación y ejecución
+El [workflow CI/CD](.github/workflows/ci.yml) se activa en push a main, pull requests hacia main y ejecución manual. Publicación y despliegue desde GHCR se limitan a push en main.
+
+| Trabajo | Controles |
+|---|---|
+| Pruebas automatizadas | Python 3.11, compilación, esquema de ejemplo, carga e inferencia del modelo, manifiesto y 12 pruebas API |
+| Construcción Docker | Buildx, caché GHA mode=min, publicación con SHA completo del commit; construcción sin publicación para otros eventos |
+| Despliegue y Smoke Tests | Descarga desde GHCR, Compose sin reconstrucción, healthcheck, tres endpoints, diagnóstico y limpieza |
+
+Artefactos de Actions: `sentinel-model-manifest` y `sentinel-release-evidence`, con retención configurada de 30 días. El manifiesto registra hashes SHA-256 del modelo y metadatos, commit y fecha UTC. La etiqueta de imagen identifica el commit; el digest identifica contenido. Las etiquetas pueden reasignarse y no equivalen a firmas digitales. El despliegue de CI es efímero, no un servicio persistente.
+
+## 8. GitOps, promoción y rollback
+
+Los manifiestos `releases/staging.json` y `releases/production.json` seleccionan imágenes reales de GHCR. El segundo representa exclusivamente un laboratorio simulado. Se verificó la secuencia versión anterior → reciente → anterior, con backend healthy y tres smoke tests satisfactorios en cada transición.
+
+El reconciliador compara la referencia declarada y la salud del contenedor. Sin `--apply` no modifica contenedores; con ese parámetro aplica el estado deseado si difiere. Se verificaron OUT_OF_SYNC, SYNCED e idempotencia mediante el mismo identificador de contenedor y acción `no-change`. Registra resultados en `mlops/artifacts/reconciliation_audit.jsonl`.
+
+- [Promoción y rollback](docs/promocion_y_rollback.md)
+- [Reconciliación GitOps](docs/reconciliacion_gitops.md)
+
+No se implementó un controlador autónomo continuo, fijación por digest ni rollback automático ante fallos.
+
+## 9. Reproducción local
 
 ### Requisitos
 
@@ -197,9 +229,44 @@ Tempo se consulta desde Grafana utilizando:
 
 `http://tempo:3200`
 
+Para detener la arquitectura completa, desde su carpeta y con su configuración de entorno disponible: `docker compose down`.
+
+### Pruebas y validaciones aisladas (CMD de Windows)
+
+Con Docker Desktop activo y desde la raíz del repositorio:
+
+```cmd
+docker compose build backend
+docker compose run --rm --no-deps -v "%cd%:/workspace" -w /workspace -e PYTHONPATH=/workspace:/workspace/backend --entrypoint sh backend -c "python -m pip install --no-cache-dir pytest==8.3.5 httpx==0.28.1 && python -m pytest -q tests"
+docker compose run --rm --no-deps -v "%cd%:/workspace" -w /workspace --entrypoint python backend -m mlops.validate_data
+docker compose run --rm --no-deps -v "%cd%:/workspace" -w /workspace --entrypoint python backend -m mlops.validate_model
+python mlops\version_model.py
+```
+
+### Laboratorio de despliegue
+
+Asegurar que el puerto 8000 esté libre antes de iniciar otro backend. Si GHCR requiere autenticación, utilizar credenciales autorizadas sin publicarlas.
+
+```cmd
+docker compose -p sentinel-ci-lab -f compose.ci.yaml up -d --build --wait --wait-timeout 120
+python mlops\smoke_test.py
+docker compose -p sentinel-ci-lab -f compose.ci.yaml down
+```
+
+### Reconciliación de una versión publicada
+
+```cmd
+python mlops\reconcile_release.py --environment staging
+python mlops\reconcile_release.py --environment staging --apply
+python mlops\reconcile_release.py --environment staging --apply
+```
+
+La segunda aplicación debe evitar recrear el contenedor si coincide y está saludable. Para detener exclusivamente el laboratorio de releases, definir `SENTINEL_IMAGE` con la referencia completa del manifiesto y ejecutar `docker compose -p sentinel-release-lab -f compose.release.yaml down`.
+
+
 ---
 
-## 7. Métricas operativas
+## 10. Métricas operativas
 
 FastAPI expone:
 
@@ -230,7 +297,7 @@ La evidencia se encuentra en `docs/evidencias/`.
 
 ---
 
-## 8. SLI, SLO y Error Budgets
+## 11. SLI, SLO y Error Budgets
 
 | Indicador | Objetivo |
 |---|---|
@@ -253,7 +320,7 @@ Documento:
 
 ---
 
-## 9. Logs y trazas
+## 12. Logs y trazas
 
 ### Logs estructurados
 
@@ -284,7 +351,7 @@ Se verificaron trazas del servicio `sentinel-backend`.
 
 ---
 
-## 10. Detección de Data Drift
+## 13. Detección de Data Drift
 
 Se utilizó Evidently para comparar datos de referencia
 con lotes simulados.
@@ -328,7 +395,7 @@ Los reportes se generan en:
 
 ---
 
-## 11. Seguimiento con MLflow
+## 14. Seguimiento con MLflow
 
 Experimento:
 
@@ -360,7 +427,7 @@ http://127.0.0.1:5000
 
 ---
 
-## 12. Alertas inteligentes
+## 15. Alertas operativas
 
 Se implementaron reglas de Prometheus:
 
@@ -384,7 +451,7 @@ Documento:
 
 ---
 
-## 13. Simulación de incidentes
+## 16. Simulación de incidentes
 
 ### INC-001 — Indisponibilidad del backend
 
@@ -437,105 +504,61 @@ en un entorno educativo local.
 
 ---
 
-## 14. Respuesta automatizada y gobernanza
+## 17. Optimización basada en evidencias
 
-La detección de condiciones anómalas mediante
-Prometheus está automatizada.
+| Trabajo (s) | Base | MAX 1 | MAX 2 | MIN 1 | MIN 2 |
+|---|---:|---:|---:|---:|---:|
+| Pruebas | 39 | 35 | 43 | 36 | 34 |
+| Docker | 58 | 82 | 91 | 16 | 25 |
+| Despliegue | 35 | 29 | 28 | 24 | 28 |
+| Suma | 132 | 146 | 162 | 76 | 87 |
 
-Las acciones correctivas de los incidentes
-se ejecutaron manualmente siguiendo runbooks.
+Se conservó `mode=min`: promedio Docker 20.5 s (64.66% menos), suma promedio 81.5 s (38.26% menos). Se observó `CACHED` en MIN 1. MAX no mostró mejora. El Dockerfile instala dependencias antes de copiar código y modelo; no se modificó durante el experimento. La muestra es pequeña y las condiciones de red, runners y caché previa pueden influir. La suma no equivale necesariamente a la duración total del workflow.
 
-Como mejoras futuras se consideran:
+[Auditoría y optimización](docs/auditoria_optimizacion_pipeline.md)
 
-- Rollback automatizado.
-- Reentrenamiento sujeto a validación.
-- Alertas automáticas de drift.
-- Cálculo operativo de error budgets.
-- Notificaciones mediante Alertmanager.
-- Escalamiento controlado de servicios.
+## 18. Gobernanza, seguridad e IA responsable
 
-No se implementaron acciones automáticas de
-rollback o reentrenamiento.
+- Validación previa al despliegue y trazabilidad por commit, hashes y registros.
+- `.env` excluido; token temporal de Actions y permisos de paquetes por trabajo.
+- Servicios locales vinculados a loopback; modelos Joblib únicamente de fuentes confiables.
+- Revisión humana obligatoria; no utilizar predicciones para decisiones adversas automáticas.
+- Los registros locales no son inmutables; no se declara cumplimiento regulatorio ni equidad demostrada.
 
----
+[Gobernanza y auditoría](docs/gobernanza_y_auditoria.md)
 
-## 15. Evidencias
+## 19. Evidencias y documentación
 
-Las capturas se encuentran en:
+[Carpeta de evidencias](docs/evidencias/). Inventario de la fase actual:
 
-`docs/evidencias/`
+| Evidencias | Resultado |
+|---|---|
+| 23–25 | Pytest, datos y modelo |
+| 26–28 | CI y manifiesto SHA-256 |
+| 29–30 | Smoke tests y despliegue |
+| 31–33 | Etiquetado, GHCR y despliegue versionado |
+| 34–36 | Promoción y rollback |
+| 37–41 (incluida 40a) | Experimentos de optimización |
+| 42–44 | Detección, reconciliación e idempotencia |
 
-Incluyen:
+Las evidencias históricas de observabilidad se documentan en el repositorio de la etapa anterior. La evidencia 45 de consolidación debe incorporarse cuando se confirme su disponibilidad.
 
-- Instrumentación de métricas.
-- Dashboards Grafana.
-- Logs estructurados.
-- Trazas OpenTelemetry y Tempo.
-- Resultados de Evidently.
-- Ejecuciones y artefactos MLflow.
-- Reglas de Prometheus.
-- Alertas e incidentes simulados.
-- Recuperación de servicios.
+## 20. Limitaciones y evolución
 
-Las evidencias deben corresponder a resultados
-reales observados durante la ejecución.
+- Prototipo académico; sin aprobación productiva ni servicio cloud persistente.
+- Validación de datos limitada al ejemplo; no garantiza calidad de todos los lotes.
+- Drift por lotes; no demuestra degradación predictiva ni activa reentrenamiento automático.
+- MLflow se usa para seguimiento experimental, no como registro formal de modelos.
+- Sin reconciliación autónoma continua, rollback automático ni fijación por digest.
+- Pendientes: protección de rama, aprobaciones independientes, escaneo de vulnerabilidades, SBOM, firmas, evaluación de equidad, alertas automáticas de drift, Alertmanager, Loki y consumo automatizado de error budgets.
+- SLO de laboratorio, no cumplimiento mensual demostrado.
 
----
+## 21. Conclusión
 
-## 16. Seguridad
+Sentinel integra el modelo predictivo con controles de operación, automatización y gestión de versiones. Los resultados demuestran viabilidad técnica en laboratorio y una mejora observada del ciclo CI/CD, sin confundirla con una mejora predictiva o impacto económico probado. La evolución hacia producción requiere validación independiente, seguridad reforzada y controles operativos persistentes.
 
-- No publicar credenciales.
-- Excluir `.env` de Git.
-- Mantener servicios accesibles solo localmente.
-- No registrar datos personales innecesarios.
-- No cargar modelos serializados de fuentes desconocidas.
-- Mantener revisión humana en decisiones de fraude.
+## 22. Referencias
 
----
+- Material académico T19, T20, T23 y T24.
+- [GitHub Actions](https://docs.github.com/actions), [Docker](https://docs.docker.com/), [Prometheus](https://prometheus.io/docs/), [Grafana](https://grafana.com/docs/), [OpenTelemetry](https://opentelemetry.io/docs/), [Evidently](https://docs.evidentlyai.com/), [MLflow](https://mlflow.org/docs/latest/).
 
-## 17. Limitaciones
-
-- Prototipo educativo local.
-- Sin despliegue cloud.
-- Modelo no aprobado para producción.
-- Sin garantía de cumplimiento mensual de SLO.
-- Drift evaluado por lotes.
-- Calidad predictiva dependiente de etiquetas reales.
-- Sin rollback automático.
-- Sin reentrenamiento automático.
-- Sin alertamiento automático de drift.
-- Sin centralización de logs en Loki.
-
----
-
-## 18. Conclusiones
-
-Sentinel Observability amplía el proyecto Sentinel
-con capacidades de monitorización proactiva,
-observabilidad moderna y gestión operativa.
-
-La implementación permite recopilar métricas,
-registrar logs, consultar trazas, detectar cambios
-estadísticos en los datos y realizar seguimiento
-experimental mediante MLflow.
-
-Las simulaciones de indisponibilidad y latencia
-permitieron comprobar procedimientos de recuperación
-del servicio.
-
-La solución constituye una base reproducible
-para evolucionar hacia una operación MLOps con
-mayor automatización y gobernanza.
-
----
-
-## 19. Referencias
-
-- Material académico T19.
-- Material académico T20.
-- Proyecto Sentinel Fraud Detection.
-- Documentación oficial de Prometheus.
-- Documentación oficial de Grafana y Tempo.
-- Documentación oficial de OpenTelemetry.
-- Documentación oficial de Evidently.
-- Documentación oficial de MLflow.
