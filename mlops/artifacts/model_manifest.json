@@ -1,0 +1,17 @@
+{
+  "proyecto": "Sentinel MLOps & GitOps",
+  "modelo": "RF_Optimizado",
+  "version_codigo": "03eef192afd5e871a4673c66dec123c5e6fd4abd",
+  "sha256_modelo": "a79433996614d70190a8c881a21fc8236b332a85f388c82153c872ca81a063f1",
+  "sha256_metadatos": "347bf4dfaab1ad2a328c11bb863b40f4f72672d8c09e76c7c14127cf7803cf38",
+  "archivo_modelo": "sentinel_pipeline.joblib",
+  "variables_entrada": 32,
+  "umbral_alerta": 0.19,
+  "metricas_validacion": {
+    "Precision": 0.29591836734693877,
+    "Recall": 0.31351351351351353,
+    "FPR": 0.047602621593652986,
+    "F1": 0.30446194225721784
+  },
+  "fecha_generacion_utc": "2026-11-21T02:12:20.114650+00:00"
+}

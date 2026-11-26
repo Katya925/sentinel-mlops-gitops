@@ -1,0 +1,8 @@
+{
+    "environment": "staging",
+    "application": "sentinel-backend",
+    "image": "ghcr.io/katya925/sentinel-backend",
+    "tag": "ffa7d598268c054c6987203f29b656976c7959a5",
+    "status": "candidate",
+    "approved_for_production": false
+}
