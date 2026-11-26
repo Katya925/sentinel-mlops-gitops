@@ -4,7 +4,7 @@
 
 ### 1. Introducción
 
-Sentinel Observability es una extensión del proyecto académico
+Sentinel Observability es una extensión del proyecto 
 Sentinel, desarrollado para detectar posibles reclamaciones
 fraudulentas en seguros de automóviles mediante Machine Learning.
 
@@ -396,8 +396,6 @@ gobernanza y resiliencia.
 
 ### 20. Referencias
 
-- Material académico T19: observabilidad y monitorización.
-- Material académico T20: continuidad y gestión operativa.
 - Documentación técnica del proyecto Sentinel.
 - Documentación oficial de Prometheus.
 - Documentación oficial de Grafana y Tempo.
