@@ -1,9 +1,7 @@
 # Sentinel MLOps & GitOps
-## Entregable 2 | Documento técnico de operación
+## Documento técnico de operación
 
-**Proyecto académico — Fase III | Detección de fraude en seguros de automóviles**
-
-**Alcance:** laboratorio local y despliegue efímero en GitHub Actions. No autorizado para producción real.
+**Fase III | Detección de fraude en seguros de automóviles**
 
 ## 1. Resumen ejecutivo
 
@@ -352,6 +350,3 @@ Sentinel demuestra una base operativa reproducible que integra observabilidad, c
 - [Auditoría y optimización](auditoria_optimizacion_pipeline.md).
 - [Gobernanza y auditoría](gobernanza_y_auditoria.md).
 - [Reconciliación GitOps](reconciliacion_gitops.md).
-- [Entregable 1](pipeline_mlops_gitops.md), README previo y configuración `ci.yml` compartida.
-
-Los ocho documentos técnicos adjuntos constituyen la base principal de este informe. Las referencias a material académico T19 y T20 proceden de dichos documentos; no se han revisado directamente para esta consolidación.
