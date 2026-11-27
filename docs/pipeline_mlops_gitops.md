@@ -1,9 +1,5 @@
 # Sentinel MLOps & GitOps
-## Entregable 1 | Pipeline automatizado de inteligencia artificial
-
-**Proyecto académico — Fase III**  
-**Repositorio:** [sentinel-mlops-gitops](https://github.com/Katya925/sentinel-mlops-gitops)  
-**Alcance:** laboratorio local y runners temporales de GitHub Actions. No autorizado para producción real.
+## Pipeline automatizado de inteligencia artificial
 
 ## 1. Resumen ejecutivo
 
@@ -190,12 +186,9 @@ Sentinel demuestra un pipeline de IA que integra validación, versionado, constr
 
 ## 19. Referencias y documentación complementaria
 
-- README histórico de Sentinel Observability, facilitado por la autora.
-- Workflow ci.yml facilitado por la autora y resultados de ejecución reportados durante el desarrollo.
 - [Auditoría y optimización](auditoria_optimizacion_pipeline.md).
 - [Gobernanza y auditoría](gobernanza_y_auditoria.md).
 - [Promoción y rollback](promocion_y_rollback.md).
 - [Reconciliación GitOps](reconciliacion_gitops.md).
 - [GitHub Actions](https://docs.github.com/actions), [Docker Build cache](https://docs.docker.com/build/cache/), [Pytest](https://docs.pytest.org/), [MLflow](https://mlflow.org/docs/latest/).
 
-La rúbrica original y las métricas predictivas históricas requieren revisión específica antes de declarar cobertura definitiva de la evaluación.
